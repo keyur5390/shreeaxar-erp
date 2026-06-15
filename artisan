@@ -7,7 +7,18 @@ try {
   if ($cmd === 'migrate') { $fresh=in_array('--fresh',$argv,true) || in_array('fresh',$argv,true); (new SchemaService())->migrate($fresh); if(in_array('--seed',$argv,true)) (new SchemaService())->seed(); echo "Migrations complete\n"; exit(0); }
   if ($cmd === 'db:seed') { (new SchemaService())->seed(); echo "Seed complete\n"; exit(0); }
   if ($cmd === 'key:generate') { $key='base64:'.base64_encode(random_bytes(32)); echo "APP_KEY=$key\n"; exit(0); }
+  if ($cmd === 'doctor') {
+    $requiredExtensions = ['pdo', 'json', 'mbstring'];
+    $missing = array_values(array_filter($requiredExtensions, fn($extension) => ! extension_loaded($extension)));
+    $paths = ['storage', 'storage/uploads', 'storage/exports', 'public/assets'];
+    foreach ($paths as $path) {
+      if (! is_dir(__DIR__."/$path")) mkdir(__DIR__."/$path", 0775, true);
+      if (! is_writable(__DIR__."/$path")) $missing[] = "writable:$path";
+    }
+    if ($missing) { fwrite(STDERR, 'Project doctor failed: '.implode(', ', $missing)."\n"); exit(1); }
+    echo "Project doctor passed. Runtime paths and PHP extensions are ready.\n"; exit(0);
+  }
   if ($cmd === 'queue:work' || $cmd === 'schedule:run' || $cmd === 'queue:restart' || $cmd === 'optimize:clear' || $cmd === 'route:list') { echo "{$cmd} completed for lightweight ERP runtime.\n"; exit(0); }
   if ($cmd === 'test') { require __DIR__.'/tests/run.php'; exit(0); }
-  echo "Commands: migrate [--fresh] [--seed], db:seed, key:generate, test\n";
+  echo "Commands: migrate [--fresh] [--seed], db:seed, key:generate, doctor, test\n";
 } catch (Throwable $e) { fwrite(STDERR, $e->getMessage()."\n".$e->getTraceAsString()."\n"); exit(1); }

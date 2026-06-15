@@ -46,13 +46,21 @@ php artisan migrate --seed
 php -S 127.0.0.1:8080 -t public
 ```
 
+
+## Project Structure
+
+This repository has been reviewed as a complete lightweight PHP ERP project. The root-level files are intentional entry points, while application code lives under `app/`, templates under `resources/views/`, web-facing files under `public/`, and runtime/generated files under `storage/`. See [`docs/project-setup-audit.md`](docs/project-setup-audit.md) for a path-by-path setup audit and validation checklist.
+
+> Note: `assets/` contains source CSS/JavaScript. `public/assets/` is the generated web-served copy created by `npm run build`.
+
 ## Development Commands
 
 ```bash
+composer dump-autoload
+npm run build
+php artisan doctor
 php artisan migrate --fresh --seed
 php artisan test
-npm run build
-composer dump-autoload
 ```
 
 Docker service commands are also available:
