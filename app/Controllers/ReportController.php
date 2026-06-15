@@ -1,0 +1,7 @@
+<?php
+namespace App\Controllers;
+use App\Core\Database; use App\Support\Auth;
+class ReportController
+{ public function show(string $type): string { Auth::requirePermission('reports.view'); $rows=$this->rows($type); return view('reports.show', compact('type','rows')); }
+ public function export(string $type): string { Auth::requirePermission('reports.export'); $rows=$this->rows($type); header('Content-Type: text/csv'); header('Content-Disposition: attachment; filename="'.$type.'-report.csv"'); $out=fopen('php://output','w'); if($rows) fputcsv($out,array_keys($rows[0])); foreach($rows as $r) fputcsv($out,$r); fclose($out); return ''; }
+ private function rows(string $type): array { $db=Database::connect(); return match($type){ 'customers'=>$db->query('SELECT customer_code,company_name,email,mobile,status,created_at FROM customers WHERE deleted_at IS NULL')->fetchAll(), 'products'=>$db->query('SELECT product_code,product_name,category,base_price,status FROM products WHERE deleted_at IS NULL')->fetchAll(), 'revenue'=>$db->query('SELECT quotation_date, COUNT(*) quotations, SUM(grand_total) revenue FROM quotations WHERE deleted_at IS NULL GROUP BY quotation_date ORDER BY quotation_date DESC')->fetchAll(), default=>$db->query('SELECT q.quotation_number,c.company_name,q.quotation_date,q.grand_total,s.name status FROM quotations q JOIN customers c ON c.id=q.customer_id LEFT JOIN quotation_statuses s ON s.id=q.quotation_status_id WHERE q.deleted_at IS NULL')->fetchAll()}; }}
