@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Core\Database;
 use Database\Seeders\DatabaseSeeder;
-use PDO;
 
 final class SchemaService
 {
@@ -45,9 +44,12 @@ final class SchemaService
         }
 
         foreach ($this->migrationFiles() as $file) {
-            foreach ($this->statementsFrom($file, $db) as $sql) {
-                $db->exec($sql);
+            $migration = require $file;
+            if (! is_object($migration) || ! method_exists($migration, 'up')) {
+                throw new \RuntimeException("Migration must return an object with an up method: {$file}");
             }
+
+            $migration->up($db);
         }
     }
 
@@ -59,32 +61,9 @@ final class SchemaService
     /** @return list<string> */
     private function migrationFiles(): array
     {
-        $files = glob(dirname(__DIR__, 2).'/database/migrations/*.sql') ?: [];
+        $files = glob(dirname(__DIR__, 2).'/database/migrations/*.php') ?: [];
         sort($files);
         return array_values($files);
     }
 
-    /** @return list<string> */
-    private function statementsFrom(string $file, PDO $db): array
-    {
-        $sql = file_get_contents($file);
-        if ($sql === false) {
-            throw new \RuntimeException("Unable to read migration file: {$file}");
-        }
-
-        if ($this->isMysql($db)) {
-            $sql = str_replace('AUTOINCREMENT', 'AUTO_INCREMENT', $sql);
-        }
-
-        $statements = preg_split('/;\s*(?:\r?\n|$)/', $sql) ?: [];
-        return array_values(array_filter(array_map(static function (string $statement): string {
-            $statement = preg_replace('/^\s*--.*$/m', '', $statement) ?? $statement;
-            return trim($statement);
-        }, $statements)));
-    }
-
-    private function isMysql(PDO $db): bool
-    {
-        return $db->getAttribute(PDO::ATTR_DRIVER_NAME) === 'mysql';
-    }
 }
