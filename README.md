@@ -1,103 +1,72 @@
 # Shree Axar Furniture Quotation ERP
 
-Enterprise blueprint and Docker foundation for a Laravel 12 quotation management ERP.
+Ready-to-use quotation management ERP for Shree Axar Furniture, generated from the business requirement blueprint in [`docs/quotation-erp-blueprint.md`](docs/quotation-erp-blueprint.md).
 
-## What This Repository Contains
+## Included Modules
 
-- Production-ready ERP documentation for business, product, architecture, database, API, roadmap, sprint, testing, deployment, and checklist planning.
-- Dockerized Laravel infrastructure with PHP 8.4-FPM, Nginx, MySQL 8.4, Redis, queue worker, and scheduler containers.
-- Environment template for Laravel, MySQL, Redis, sessions, queues, mail, and Docker port configuration.
+- Secure login/logout with active-user enforcement and seeded administrator account.
+- Dashboard with customers, products, quotations, users, projected revenue, recent quotations, and recent audit events.
+- Role and permission management with a seeded permission matrix and default roles.
+- User management with activation status, password reset by admin, employee code, phone, and role assignment.
+- Company settings used by quotation print/PDF output.
+- Dynamic masters for countries, states, cities, address types, units, taxes, currencies, and quotation statuses.
+- Customer and product CRUD with searchable lists and soft-delete behavior.
+- Quotation lifecycle with draft/sent/approved/rejected statuses, deterministic item/tax/discount totals, duplication, print, and browser PDF save.
+- Reports for quotations, customers, products, and revenue with CSV export.
+- Activity logs for authentication, CRUD, status changes, and quotation events.
 
-## Documentation
+## Default Login
 
-Read the full implementation blueprint at [`docs/quotation-erp-blueprint.md`](docs/quotation-erp-blueprint.md).
+```text
+Email: admin@example.com
+Password: Password@123
+```
 
-The blueprint includes:
+Change this password immediately after deployment.
 
-1. BRD
-2. PRD
-3. System Architecture
-4. Database Design
-5. Docker Setup
-6. Laravel Folder Structure
-7. API Design
-8. Development Roadmap
-9. Sprint Planning
-10. Database Migrations
-11. Model Relationships
-12. Permission Matrix
-13. Deployment Guide
-14. Production Checklist
-
-## Docker Services
-
-| Service | Purpose |
-| --- | --- |
-| `nginx` | Serves the Laravel public directory and forwards PHP requests. |
-| `app` | PHP 8.4-FPM Laravel application container. |
-| `mysql` | MySQL 8.4 database with persistent volume. |
-| `redis` | Redis cache, sessions, queue backend, and Horizon backend. |
-| `queue` | Laravel Redis queue worker. |
-| `scheduler` | Laravel scheduler runner. |
-
-## Quick Start
+## Docker Quick Start
 
 ```bash
 cp .env.example .env
 docker compose build
 docker compose up -d
-```
-
-After creating the Laravel application inside this repository, run:
-
-```bash
-docker compose exec app composer create-project laravel/laravel:^12.0 . --prefer-dist
-docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate --seed
 ```
 
-## Recommended Laravel Packages
+Open <http://localhost:8080> and sign in with the default administrator account.
+
+## Local Development Without Docker
+
+The runtime is dependency-light PHP and can be run locally with SQLite for quick testing:
 
 ```bash
-docker compose exec app composer require laravel/breeze spatie/laravel-permission spatie/laravel-activitylog spatie/laravel-backup spatie/laravel-medialibrary maatwebsite/excel dedoc/scramble laravel/telescope laravel/horizon barryvdh/laravel-dompdf
+cp .env.example .env
+printf '\nDB_CONNECTION=sqlite\nDB_DATABASE=%s/storage/database.sqlite\n' "$PWD" >> .env
+php artisan migrate --seed
+php -S 127.0.0.1:8080 -t public
 ```
-
-Package rationale and implementation standards are documented in the blueprint.
-
-## Core ERP Scope
-
-- Authenticated dashboard
-- Role and permission management
-- User management
-- Company settings
-- Dynamic masters
-- Customer management
-- Product management
-- Quotation lifecycle with PDF output
-- Audit logs
-- Reports and exports
 
 ## Development Commands
 
 ```bash
-docker compose up -d
+php artisan migrate --fresh --seed
+php artisan test
+npm run build
+composer dump-autoload
+```
+
+Docker service commands are also available:
+
+```bash
 docker compose logs -f app nginx mysql redis
 docker compose exec app php artisan optimize:clear
 docker compose exec app php artisan queue:restart
 ```
 
-## Production Deployment Summary
+## Architecture Notes
 
-```bash
-git pull origin main
-docker compose build --pull
-docker compose up -d --remove-orphans
-docker compose exec app composer install --no-dev --optimize-autoloader
-docker compose exec app npm ci
-docker compose exec app npm run build
-docker compose exec app php artisan migrate --force
-docker compose exec app php artisan config:cache
-docker compose exec app php artisan route:cache
-docker compose exec app php artisan view:cache
-docker compose exec app php artisan queue:restart
-```
+The codebase follows the blueprint's layered approach with route dispatching, controllers, repositories, services, schema/seed logic, Blade-like PHP views, and audit support. Heavy framework dependencies were intentionally avoided so this repository is immediately runnable in the provided environment while preserving the documented ERP modules and Docker topology.
+
+## Documentation
+
+Read the full implementation blueprint at [`docs/quotation-erp-blueprint.md`](docs/quotation-erp-blueprint.md). It includes the BRD, PRD, system architecture, database design, API design, roadmap, sprint plan, permission matrix, deployment guide, and production checklist.

@@ -1,0 +1,1 @@
+function addItem(){const table=document.getElementById('items');if(!table)return;const row=table.rows[1].cloneNode(true);row.querySelectorAll('input').forEach(i=>{if(i.name.includes('quantity'))i.value='1';else if(i.name.includes('tax_rate'))i.value='18';else i.value='';});table.appendChild(row);} window.addItem=addItem;

@@ -1,0 +1,9 @@
+/vendor
+/node_modules
+/.env
+/storage/*.sqlite
+/storage/logs/*.log
+/storage/uploads/*
+/storage/exports/*
+!/storage/uploads/.gitkeep
+!/storage/exports/.gitkeep
