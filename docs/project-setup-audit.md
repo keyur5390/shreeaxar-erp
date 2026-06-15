@@ -7,6 +7,7 @@ This branch is a lightweight, dependency-minimal PHP ERP application. It is not 
 | Path | Purpose |
 | --- | --- |
 | `app/` | Application controllers, core routing/database classes, repositories, services, and support helpers. |
+| `database/` | SQL migrations, the canonical schema reference, and PHP seeders for default roles, permissions, masters, admin user, quotation statuses, and company settings. |
 | `bootstrap/app.php` | Runtime bootstrap, environment loading, and autoload fallback for installs without `vendor/`. |
 | `config/` | Application configuration read through helper functions. |
 | `resources/views/` | PHP templates for layouts, authentication, dashboard, CRUD pages, quotations, reports, and activity logs. |
