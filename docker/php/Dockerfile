@@ -21,7 +21,7 @@ RUN apk add --no-cache \
     zip \
     $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) bcmath exif gd intl mbstring opcache pcntl pdo_mysql zip \
+    && docker-php-ext-install -j$(nproc) bcmath exif gd intl mbstring opcache pcntl pdo_mysql pdo_sqlite zip \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && addgroup -g ${GID} laravel \
