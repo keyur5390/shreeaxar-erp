@@ -47,6 +47,17 @@ php -S 127.0.0.1:8080 -t public
 ```
 
 
+
+## Database Schema, Migrations, and Seeders
+
+The database assets are tracked in the repository instead of being hidden inside runtime storage:
+
+- `database/migrations/2026_06_15_000000_create_quotation_erp_schema.sql` is the executable base migration used by `php artisan migrate`.
+- `database/schema.sql` is the plain SQL schema reference for review, database tooling, and hand-off.
+- `database/seeders/DatabaseSeeder.php` contains the default roles, permission matrix, admin user, masters, quotation statuses, currencies, and company settings used by `php artisan migrate --seed` and `php artisan db:seed`.
+
+Run `php artisan migrate --fresh --seed` to rebuild a local SQLite or MySQL database from these files.
+
 ## Project Structure
 
 This repository has been reviewed as a complete lightweight PHP ERP project. The root-level files are intentional entry points, while application code lives under `app/`, templates under `resources/views/`, web-facing files under `public/`, and runtime/generated files under `storage/`. See [`docs/project-setup-audit.md`](docs/project-setup-audit.md) for a path-by-path setup audit and validation checklist.
@@ -73,7 +84,7 @@ docker compose exec app php artisan queue:restart
 
 ## Architecture Notes
 
-The codebase follows the blueprint's layered approach with route dispatching, controllers, repositories, services, schema/seed logic, Blade-like PHP views, and audit support. Heavy framework dependencies were intentionally avoided so this repository is immediately runnable in the provided environment while preserving the documented ERP modules and Docker topology.
+The codebase follows the blueprint's layered approach with route dispatching, controllers, repositories, services, SQL migrations, reusable schema files, seeders, Blade-like PHP views, and audit support. Heavy framework dependencies were intentionally avoided so this repository is immediately runnable in the provided environment while preserving the documented ERP modules and Docker topology.
 
 ## Documentation
 
