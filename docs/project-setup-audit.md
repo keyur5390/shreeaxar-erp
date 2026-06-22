@@ -26,8 +26,9 @@ The root-level files are intentional project entry points rather than random lef
 - `build-assets.mjs` copies source assets into the public web root.
 - `composer.json` defines PHP requirements, autoloading, and script aliases.
 - `package.json` defines asset build commands without adding unnecessary frontend dependencies.
-- `docker-compose.yml` starts the complete PHP, Nginx, MySQL, Redis, queue, and scheduler stack.
+- `docker-compose.yml` starts the complete PHP, Nginx, MySQL, Redis, queue, and scheduler stack, and gates dependent services behind the healthy PHP app bootstrap.
 - `.env.example` is the Docker-oriented environment template.
+- `docker/php/entrypoint.sh` is the idempotent container bootstrap script for Composer setup, asset builds, MySQL readiness, app key generation, cache/runtime clearing, doctor checks, migrations, and seeders.
 
 ## Validation checklist
 
@@ -46,8 +47,9 @@ For Docker, use:
 
 ```bash
 cp .env.example .env
-docker compose build
-docker compose up -d
-docker compose exec app php artisan doctor
-docker compose exec app php artisan migrate --fresh --seed
+docker compose up -d --build
+docker compose ps
+docker compose logs -f app nginx mysql redis
 ```
+
+The app service bootstrap automatically runs the setup previously done by hand: Composer install/dump-autoload, asset build, `php artisan key:generate --write`, `php artisan optimize:clear`, `php artisan doctor`, and `php artisan migrate --seed`. Re-run `docker compose exec app php artisan migrate --fresh --seed` only when you intentionally want to rebuild the database.
