@@ -32,7 +32,10 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY docker/php/entrypoint.sh /usr/local/bin/erp-entrypoint
+RUN chmod +x /usr/local/bin/erp-entrypoint
 
 USER laravel
 
+ENTRYPOINT ["erp-entrypoint"]
 CMD ["php-fpm"]

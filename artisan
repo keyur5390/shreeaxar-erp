@@ -6,7 +6,24 @@ $cmd=$argv[1] ?? 'help';
 try {
   if ($cmd === 'migrate') { $fresh=in_array('--fresh',$argv,true) || in_array('fresh',$argv,true); (new SchemaService())->migrate($fresh); if(in_array('--seed',$argv,true)) (new SchemaService())->seed(); echo "Migrations complete\n"; exit(0); }
   if ($cmd === 'db:seed') { (new SchemaService())->seed(); echo "Seed complete\n"; exit(0); }
-  if ($cmd === 'key:generate') { $key='base64:'.base64_encode(random_bytes(32)); echo "APP_KEY=$key\n"; exit(0); }
+  if ($cmd === 'key:generate') {
+    $key='base64:'.base64_encode(random_bytes(32));
+    if (in_array('--write',$argv,true) || in_array('--force',$argv,true)) {
+      $envPath=__DIR__.'/.env';
+      $env=is_file($envPath) ? file_get_contents($envPath) : '';
+      if ($env === false) $env='';
+      if (preg_match('/^APP_KEY=.*$/m',$env)) {
+        $env=preg_replace('/^APP_KEY=.*$/m','APP_KEY='.$key,$env);
+      } else {
+        $env=rtrim($env)."\nAPP_KEY=$key\n";
+      }
+      file_put_contents($envPath,$env);
+      echo "Application key written to .env\n";
+    } else {
+      echo "APP_KEY=$key\n";
+    }
+    exit(0);
+  }
   if ($cmd === 'doctor') {
     $requiredExtensions = ['pdo', 'json', 'mbstring'];
     $missing = array_values(array_filter($requiredExtensions, fn($extension) => ! extension_loaded($extension)));
