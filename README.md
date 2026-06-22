@@ -28,12 +28,10 @@ Change this password immediately after deployment.
 
 ```bash
 cp .env.example .env
-docker compose build
-docker compose up -d
-docker compose exec app php artisan migrate --seed
+docker compose up -d --build
 ```
 
-Open <http://localhost:8080> and sign in with the default administrator account.
+On first startup, the PHP container now performs the full application bootstrap automatically: Composer autoload/dependency setup, optional npm dependency install, asset build, MySQL readiness wait, application key generation, cache/runtime clear, runtime doctor checks, and `php artisan migrate --seed`. Open <http://localhost:8080> after the containers become healthy and sign in with the default administrator account.
 
 ## Local Development Without Docker
 
@@ -77,10 +75,15 @@ php artisan test
 Docker service commands are also available:
 
 ```bash
+docker compose ps
 docker compose logs -f app nginx mysql redis
+docker compose exec app php artisan doctor
+docker compose exec app php artisan migrate --fresh --seed
 docker compose exec app php artisan optimize:clear
 docker compose exec app php artisan queue:restart
 ```
+
+Set `RUN_MIGRATIONS=false` in `.env` only when you intentionally want the app container to skip automatic startup migrations/seeders.
 
 ## Architecture Notes
 
